@@ -1,61 +1,66 @@
-# from urllib.request import urlopen, quote
-# import json
+import requests
+
+
+def find_related(data, s1=0):
+    related_list = []
+    for i in range(4):
+        s = data.find('&quot;//i.scdn.co/image', s1)
+        s1 = data.find('</span>', s)
+        related_list.append(data[s + 102:s1])
+    return related_list
+
+
+def spotify_listeners(url):
+    htmlContent = requests.get(url, verify=False)
+    data = htmlContent.text
+
+    print(data)
+
+
+    start_listeners = data.find('Monthly Listeners: ')
+    end_listeners = data.find(", Where People Listen")
+    listeners = data[start_listeners + 19:end_listeners]
+
+    start_name = data.find('<title>')  # 114
+    end_name = data.find(" on Spotify")
+    name = data[start_name + 7:end_name]
+
+    related_list = find_related(data)
+    return name, int(listeners), related_list
+
+
+urls = ["https://open.spotify.com/artist/0RqtSIYZmd4fiBKVFqyIqD",
+        "https://open.spotify.com/artist/66CXWjxzNUsdJxJ2JdwvnR",
+        "https://open.spotify.com/artist/53XhwfbYqKCa1cC15pYq2q",
+        "https://open.spotify.com/artist/3q7HBObVc0L8jNeTe5Gofh",
+        'https://open.spotify.com/artist/04gDigrS5kc9YWfZHwBETP',
+        'https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI']
+
+
+for url in urls:
+    name, listen, artists = spotify_listeners(url)
+    print("{0} - {1} \n {2}\n\n".format(name, listen, str(artists)))
+
+
+
+# import sys
+# from spotipy.oauth2 import SpotifyClientCredentials
+# import spotipy
+# import pprint
 #
+# id_spotify = '21681c4c54bf40e884ce470dd6136f77'
+# Secret_spotify = '4223065a9d5c4ab0a6fe348db1a309ee'
 #
-# def main():
-#     token = 'EAAERuEnX25YBAI5fT3gdfU3AbZAHvOWqOPhisAPC4kr9xom5SsbqtJ9HIvnx4bVHhNLHPUecCpvNj6z33WLwrDXW6IyNmzeqPQRhjQP0gYjlp00Fn6Av3ORh5GkdEffZAU9ZASL5BW1sH6L5sqRO1EVuoL4iStaTlCQc3wPXAL9iwWlf44uUKcfuxBeuFQZD'
+# if len(sys.argv) > 1:
+#     search_str = sys.argv[1]
+# else:
+#     search_str = 'ariana grande'
 #
+# client_id = id_spotify
+# client_secret = Secret_spotify
 #
-#     list_companies = ["pg/arianagrande/events/"]
-#     graph_url = "http://graph.facebook.com/"
+# client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+# sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 #
-#     for company in list_companies:
-#         current_page = graph_url + company
-#
-#         web_response = urlopen(current_page)
-#         readable_page = web_response.read()
-#         json_fbpage = json.loads(readable_page)
-#
-#         print(company + " page")
-#         print(json_fbpage["id"])
-#         print(json_fbpage["likes"])
-#         print(json_fbpage["talking_about_count"])
-#         print(json_fbpage["username"]+'\n')
-#
-#
-# if __name__ == "__main__":
-#     main()
-
-
-from urllib import request
-import json
-
-
-def get_page_data(page_id, access_token):
-    api_endpoint = "https://www.facebook.com/pg/arianagrande/events/"
-    fb_graph_url = api_endpoint + page_id + "?fields=id,name,likes,link&access_token=" + access_token
-    try:
-        api_request = request.Request(fb_graph_url)
-        api_response = request.urlopen(api_request)
-
-        try:
-            return json.loads(api_response.read())
-        except (ValueError, KeyError, TypeError):
-            return "JSON error"
-
-    except IOError as e:
-        if hasattr(e, 'code'):
-            return e.code
-        elif hasattr(e, 'reason'):
-            return e.reason
-
-
-page_id = "100004460293468"  # username or id
-token = "300958187248534|ut3aXylJ-sUjDV67sGcSSg4ROlI"  # Access Token
-page_data = get_page_data(page_id, token)
-
-print(page_data)
-
-print("Page Name:" + page_data['name'])
-print("Likes:" + str(page_data['likes']))
-print("Link:" + page_data['link'])
+# result = sp.search(search_str)
+# pprint.pprint(result)
